@@ -12,9 +12,12 @@ function Header() {
   const updateCartCount = () => {
     try {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      // Count unique product IDs using a Set
-      const uniqueProducts = new Set(cart.map((item) => item.product._id));
-      setUniqueProductCount(uniqueProducts.size);
+      if(cart.length===0){
+         setUniqueProductCount(0);
+      }else{
+         const uniqueProducts = new Set(cart.map((item) => item.product._id));
+         setUniqueProductCount(uniqueProducts.size);
+      }
     } catch (err) {
       console.error('Error parsing cart from localStorage:', err);
       setUniqueProductCount(0);
@@ -22,17 +25,11 @@ function Header() {
   };
 
   useEffect(() => {
-    // Initial cart count on mount
     updateCartCount();
-
-    // Listen for changes to localStorage (e.g., when cart is updated in another tab/component)
     const handleStorageChange = () => {
       updateCartCount();
     };
-
     window.addEventListener('storage', handleStorageChange);
-
-    // Custom event to handle same-tab updates (since 'storage' event only works across tabs)
     window.addEventListener('cartUpdated', handleStorageChange);
 
     return () => {
