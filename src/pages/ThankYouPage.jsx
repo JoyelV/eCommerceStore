@@ -15,7 +15,7 @@ function ThankYouPage() {
     const fetchOrder = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`http://localhost:5000/api/orders/${orderNumber}`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/orders/${orderNumber}`);
         setOrder(res.data);
       } catch (err) {
         console.error('Error fetching order:', err.message);

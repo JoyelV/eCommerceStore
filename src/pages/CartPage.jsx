@@ -19,7 +19,7 @@ function CartPage() {
       try {
         const updatedInventory = {};
         for (const item of storedCart) {
-          const res = await axios.get(`http://localhost:5000/api/products/${item.product._id}`);
+          const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/products/${item.product._id}`);
           const product = res.data;
           const variant = product.variants.find(
             (v) => v.color === item.variant.color && v.size === item.variant.size
@@ -95,7 +95,7 @@ function CartPage() {
     }
 
     // Check if cart exceeds backend limit
-    if (cartItems.length > 50) {
+    if (cartItems.length > 10) {
       toast.error('Too many items in the cart (maximum 50). Please remove some items.');
       return;
     }

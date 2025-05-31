@@ -40,7 +40,7 @@ export function AuthProvider({ children }) {
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
           try {
-            const { data } = await axios.post('http://localhost:5000/api/auth/refresh-token', {
+            const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/refresh-token`, {
               refreshToken,
             });
             setAccessToken(data.accessToken);
@@ -61,7 +61,7 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (email, password) => {
     try {
-      const { data } = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+      const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, { email, password });
       setUser(data.user);
       setAccessToken(data.accessToken);
       setRefreshToken(data.refreshToken);

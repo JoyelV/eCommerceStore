@@ -22,7 +22,7 @@ function ProductsPage() {
       if (minPrice) params.minPrice = minPrice;
       if (maxPrice) params.maxPrice = maxPrice;
 
-      const { data } = await axios.get('http://localhost:5000/api/products', { params });
+      const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/products`, { params });
       setProducts(data.products);
       setTotalPages(data.totalPages);
       setCurrentPage(data.page);
@@ -41,7 +41,7 @@ function ProductsPage() {
   const addToCart = async (productId) => {
     try {
       // Fetch the full product details to get variants and inventory
-      const { data: product } = await axios.get(`http://localhost:5000/api/products/${productId}`);
+      const { data: product } = await axios.get(`${import.meta.env.VITE_API_URL}/api/products/${productId}`);
 
       // Use the first variant as the default (same as ProductDetailedPage)
       let defaultVariant = { color: '', size: '' };
@@ -100,7 +100,7 @@ function ProductsPage() {
       }
 
       localStorage.setItem('cart', JSON.stringify(cart));
-      window.dispatchEvent(new Event('cartUpdated')); // Notify Header of cart update
+      window.dispatchEvent(new Event('cartUpdated')); 
       toast.success(`${product.name} added to cart!`, {
         position: 'top-right',
         duration: 3000,

@@ -14,8 +14,8 @@ function HomePage() {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const { data } = await axios.get('http://localhost:5000/api/products', {
-          params: { limit: 6 }, // Fetch only 6 products
+        const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/products`, {
+          params: { limit: 6 }, 
         });
         const fetchedProducts = Array.isArray(data.products) ? data.products : [];
         setProducts(fetchedProducts);
@@ -34,10 +34,8 @@ function HomePage() {
   // Add to Cart logic with inventory validation
   const addToCart = async (productId) => {
     try {
-      // Fetch full product details to get variants and inventory
-      const { data: product } = await axios.get(`http://localhost:5000/api/products/${productId}`);
+      const { data: product } = await axios.get(`${import.meta.env.VITE_API_URL}/api/products/${productId}`);
 
-      // Set default variant (first variant or fallback)
       let defaultVariant = { color: '', size: '' };
       let inventory = 0;
       if (product.variants && product.variants.length > 0) {
@@ -50,10 +48,8 @@ function HomePage() {
         defaultVariant = { color: 'default', size: 'default' };
       }
 
-      // Default quantity
       const quantity = 1;
 
-      // Inventory validation
       if (inventory === 0) {
         toast.error(`${product.name} is out of stock!`, {
           position: 'top-right',
@@ -94,7 +90,7 @@ function HomePage() {
       }
 
       localStorage.setItem('cart', JSON.stringify(cart));
-      window.dispatchEvent(new Event('cartUpdated')); // Notify Header
+      window.dispatchEvent(new Event('cartUpdated')); 
       toast.success(`${product.name} added to cart!`, {
         position: 'top-right',
         duration: 3000,

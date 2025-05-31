@@ -46,7 +46,7 @@ function CheckoutPage() {
       try {
         const updatedInventory = {};
         for (const item of cartItems) {
-          const res = await axios.get(`http://localhost:5000/api/products/${item.product._id}`);
+          const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/products/${item.product._id}`);
           const fetchedProduct = res.data;
           const selectedVariant = fetchedProduct.variants.find(
             (v) => v.color === item.variant.color && v.size === item.variant.size
@@ -147,7 +147,7 @@ function CheckoutPage() {
         customer: formData,
       };
 
-      const response = await axios.post('http://localhost:5000/api/orders', payload);
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/orders`, payload);
       const { orderNumber, status } = response.data;
 
       if (status === 'Approved') {

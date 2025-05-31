@@ -19,7 +19,7 @@ function ProductDetailedPage() {
     const fetchProduct = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`http://localhost:5000/api/products/${id}`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/products/${id}`);
         const fetchedProduct = res.data;
         setProduct(fetchedProduct);
 
