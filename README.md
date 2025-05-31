@@ -1,6 +1,5 @@
 
 # eCommerce Store Frontend
-
 This is the frontend application for an eCommerce platform built with **React**, **React Router**, and **Tailwind CSS**. It provides a user-friendly interface for browsing products, managing a cart, and placing orders. The application communicates with a backend API to fetch product data and process orders.
 
 ## Features
@@ -58,27 +57,37 @@ Or with yarn:
 yarn start
 ```
 
-The app will be available at `http://localhost:3000`.
+The app will be available at `http://localhost:5173`.
 
 ## Project Structure
 ```
 client/
-├── public/                # Static assets (e.g., index.html, favicon)
+├── public/                    # Static assets (e.g., index.html, favicon)
 ├── src/
-│   ├── components/        # Reusable components (e.g., Header)
+│   ├── components/            # Reusable components (e.g., Header)
 │   │   └── Header.jsx
-│   ├── pages/             # Page components
+│   │   ├── Footer.jsx
+│   │   ├── ProtectedRoute.jsx
+│   ├── pages/                 # Page components
+│   │   ├── CartPage.jsx
+│   │   ├── CheckoutPage.jsx
 │   │   ├── HomePage.jsx
-│   │   ├── ProductsPage.jsx
+│   │   ├── LoginPage.jsx
+│   │   ├── NotFoundPage.jsx
 │   │   ├── ProductDetailedPage.jsx
-│   │   └── CheckoutPage.jsx
-│   ├── context/           # React context (e.g., authHook)
-│   │   └── authHook.js
-│   ├── App.jsx            # Main app component with routing
-│   ├── index.jsx          # Entry point
-│   └── styles/            # Custom styles (if any)
-├── package.json           # Dependencies and scripts
-└── tailwind.config.js     # Tailwind CSS configuration
+│   │   ├── ProductsPage.jsx
+│   │   ├── RegisterPage.jsx
+│   │   └── ThankYouPage.jsx
+│   ├── context/              # React context (e.g., authHook)
+│   │   └── AuthContext.js
+│   │   └── AuthHook.js
+│   │   └── AuthProvider.js
+│   ├── App.jsx               # Main app component with routing
+│   ├── index.css             # Main CSS file
+│   ├── main.jsx              # Entry point
+│   └── styles/               # Custom styles (if any)
+├── package.json              # Dependencies and scripts
+└── tailwind.config.js        # Tailwind CSS configuration
 ```
 
 ## Available Scripts
