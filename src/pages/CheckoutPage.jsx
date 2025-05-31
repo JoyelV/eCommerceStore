@@ -155,7 +155,7 @@ function CheckoutPage() {
         localStorage.removeItem('cart');
         navigate(`/thank-you/${orderNumber}`);
       } else {
-        toast.error(`Transaction ${status.toLowerCase()}. Please try again.`);
+        toast.error(`Transaction ${status.toLowerCase()}. Email sent to mail,Please try again.`);
         setErrors({ submit: `Transaction ${status.toLowerCase()}. Please try again.` });
       }
     } catch (err) {
