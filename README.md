@@ -66,6 +66,7 @@ client/
 ├── src/
 │   ├── assets/                # Images, fonts, and other assets
 │   ├── components/            # Reusable components
+│   │   ├── ErrorBoundary.jsx
 │   │   ├── Header.jsx
 │   │   ├── Footer.jsx
 │   │   ├── ProtectedRoute.jsx
