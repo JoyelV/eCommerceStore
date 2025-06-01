@@ -13,12 +13,14 @@ import { Toaster } from 'react-hot-toast';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   return (
     <Router>
       <AuthProvider>
         <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+        <ErrorBoundary>
         <Header />
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -54,6 +56,7 @@ function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
         <Footer />
+        </ErrorBoundary>
       </AuthProvider>
     </Router>
   );
