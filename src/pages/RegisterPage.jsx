@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/20/solid';
+import { registerUser } from '../api/AuthApi'; 
 
 function RegisterPage() {
   const [name, setName] = useState('');
@@ -37,11 +37,11 @@ function RegisterPage() {
 
     setIsSubmitting(true);
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, { name, email, password });
+      await registerUser({ name, email, password }); 
       setSuccess('Registration successful! Redirecting to login...');
       setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed. Please try again.');
+      setError(err.message || 'Registration failed. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCartIcon } from '@heroicons/react/20/solid';
-import axios from 'axios';
 import toast from 'react-hot-toast';
+import { fetchProducts, fetchProductById } from '../api/ProductApi'; 
+import { useCart } from '../hooks/useCart'; 
 
 function ProductsPage() {
   const [products, setProducts] = useState([]);
@@ -13,8 +14,9 @@ function ProductsPage() {
   const [search, setSearch] = useState('');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
+  const { addToCart } = useCart(); 
 
-  const fetchProducts = async (page = 1) => {
+  const fetchProductsData = async (page = 1) => {
     setLoading(true);
     try {
       const params = { page, limit: 9 };
@@ -22,7 +24,7 @@ function ProductsPage() {
       if (minPrice) params.minPrice = minPrice;
       if (maxPrice) params.maxPrice = maxPrice;
 
-      const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/products`, { params });
+      const data = await fetchProducts(params); 
       setProducts(data.products);
       setTotalPages(data.totalPages);
       setCurrentPage(data.page);
@@ -35,15 +37,12 @@ function ProductsPage() {
   };
 
   useEffect(() => {
-    fetchProducts();
+    fetchProductsData();
   }, []);
 
-  const addToCart = async (productId) => {
+  const handleAddToCart = async (productId) => {
     try {
-      // Fetch the full product details to get variants and inventory
-      const { data: product } = await axios.get(`${import.meta.env.VITE_API_URL}/api/products/${productId}`);
-
-      // Use the first variant as the default (same as ProductDetailedPage)
+      const product = await fetchProductById(productId); 
       let defaultVariant = { color: '', size: '' };
       let inventory = 0;
       if (product.variants && product.variants.length > 0) {
@@ -56,55 +55,8 @@ function ProductsPage() {
         defaultVariant = { color: 'default', size: 'default' };
       }
 
-      // Default quantity to 1
       const quantity = 1;
-
-      // Inventory validation
-      if (inventory === 0) {
-        toast.error(`${product.name} is out of stock!`, {
-          position: 'top-right',
-          duration: 3000,
-        });
-        return;
-      }
-
-      if (quantity > inventory) {
-        toast.error(`Only ${inventory} items available in stock for ${product.name}!`, {
-          position: 'top-right',
-          duration: 3000,
-        });
-        return;
-      }
-
-      // Add to cart logic (same as ProductDetailedPage)
-      const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      const existingItem = cart.find(
-        (item) =>
-          item.product._id === product._id &&
-          item.variant.color === defaultVariant.color &&
-          item.variant.size === defaultVariant.size
-      );
-
-      if (existingItem) {
-        const newQuantity = existingItem.quantity + quantity;
-        if (newQuantity > inventory) {
-          toast.error(`Only ${inventory} items available in stock for ${product.name}!`, {
-            position: 'top-right',
-            duration: 3000,
-          });
-          return;
-        }
-        existingItem.quantity = newQuantity;
-      } else {
-        cart.push({ product, variant: defaultVariant, quantity });
-      }
-
-      localStorage.setItem('cart', JSON.stringify(cart));
-      window.dispatchEvent(new Event('cartUpdated')); 
-      toast.success(`${product.name} added to cart!`, {
-        position: 'top-right',
-        duration: 3000,
-      });
+      addToCart(product, defaultVariant, quantity, inventory); 
     } catch (err) {
       console.error('Error adding to cart:', err.message);
       toast.error('Failed to add product to cart. Please try again.', {
@@ -117,12 +69,12 @@ function ProductsPage() {
   const handleSearch = (e) => {
     e.preventDefault();
     setCurrentPage(1);
-    fetchProducts(1);
+    fetchProductsData(1);
   };
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
-    fetchProducts(page);
+    fetchProductsData(page);
   };
 
   if (loading) {
@@ -204,7 +156,7 @@ function ProductsPage() {
                     View Details
                   </Link>
                   <button
-                    onClick={() => addToCart(product._id)}
+                    onClick={() => handleAddToCart(product._id)}
                     className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-md"
                     aria-label={`Add ${product.name} to cart`}
                   >

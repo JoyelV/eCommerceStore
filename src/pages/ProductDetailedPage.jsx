@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import axios from 'axios';
 import { StarIcon } from '@heroicons/react/20/solid';
-import toast from 'react-hot-toast';
+import { fetchProductById } from '../api/ProductApi'; 
+import { useCart } from '../hooks/useCart'; 
 
 function ProductDetailedPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { addToCart } = useCart(); 
   const [product, setProduct] = useState(null);
   const [variant, setVariant] = useState({ color: '', size: '' });
   const [quantity, setQuantity] = useState(1);
@@ -16,11 +17,10 @@ function ProductDetailedPage() {
   const [inventory, setInventory] = useState(null);
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchProductData = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/products/${id}`);
-        const fetchedProduct = res.data;
+        const fetchedProduct = await fetchProductById(id); 
         setProduct(fetchedProduct);
 
         if (fetchedProduct.variants.length > 0) {
@@ -34,13 +34,13 @@ function ProductDetailedPage() {
         }
       } catch (err) {
         console.error('Error fetching product:', err.message);
-        setError(`Failed to load product: ${err.response?.status || 'Unknown error'}`);
+        setError(`Failed to load product: ${err.message}`);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProduct();
+    fetchProductData();
   }, [id]);
 
   useEffect(() => {
@@ -85,36 +85,13 @@ function ProductDetailedPage() {
       setError('This item is out of stock');
       return;
     }
-    if (quantity > inventory) {
-      setError(`Only ${inventory} items available in stock`);
-      return;
-    }
 
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
-    const existingItem = cart.find(
-      (item) =>
-        item.product._id === product._id &&
-        item.variant.color === variant.color &&
-        item.variant.size === variant.size
-    );
-
-    if (existingItem) {
-      const newQuantity = existingItem.quantity + quantity;
-      if (newQuantity > inventory) {
-        setError(`Only ${inventory} items available in stock`);
-        return;
-      }
-      existingItem.quantity = newQuantity;
+    const success = addToCart(product, variant, quantity, inventory); 
+    if (success) {
+      setError(''); 
     } else {
-      cart.push({ product, variant, quantity });
+      setError(`Only ${inventory} items available in stock`);
     }
-
-    localStorage.setItem('cart', JSON.stringify(cart));
-    toast.success(`${product.name} added to cart!`, {
-      position: 'top-right',
-      duration: 3000,
-    });
-    setError(''); // Clear any existing errors
   };
 
   if (loading) {

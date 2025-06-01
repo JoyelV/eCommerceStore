@@ -2,25 +2,22 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { TrashIcon } from '@heroicons/react/20/solid';
-import axios from 'axios';
+import { fetchProductById } from '../api/ProductApi'; 
+import { useCart } from '../hooks/useCart'; 
 
 function CartPage() {
-  const [cartItems, setCartItems] = useState([]);
   const [inventoryData, setInventoryData] = useState({});
   const [loadingInventory, setLoadingInventory] = useState(true);
   const navigate = useNavigate();
+  const { cart: cartItems, removeFromCart, updateQuantity, clearCart } = useCart(); 
 
   useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
-    setCartItems(storedCart);
-
     const fetchInventory = async () => {
       setLoadingInventory(true);
       try {
         const updatedInventory = {};
-        for (const item of storedCart) {
-          const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/products/${item.product._id}`);
-          const product = res.data;
+        for (const item of cartItems) {
+          const product = await fetchProductById(item.product._id); 
           const variant = product.variants.find(
             (v) => v.color === item.variant.color && v.size === item.variant.size
           );
@@ -35,44 +32,30 @@ function CartPage() {
       }
     };
 
-    if (storedCart.length > 0) {
+    if (cartItems.length > 0) {
       fetchInventory();
     } else {
       setLoadingInventory(false);
     }
-  }, []);
+  }, [cartItems]);
 
-  const updateQuantity = (index, newQuantity) => {
+  const handleUpdateQuantity = (productId, variant, newQuantity) => {
     if (newQuantity < 1) {
       toast.error('Quantity cannot be less than 1.');
       return;
     }
 
-    const item = cartItems[index];
-    const availableInventory = inventoryData[item.product._id] || 0;
-    if (newQuantity > availableInventory) {
-      toast.error(`Only ${availableInventory} items available for ${item.product.name}.`);
-      return;
-    }
-
-    const updatedCart = [...cartItems];
-    updatedCart[index].quantity = newQuantity;
-    setCartItems(updatedCart);
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
-    toast.success('Quantity updated!');
+    const availableInventory = inventoryData[productId] || 0;
+    updateQuantity(productId, variant, newQuantity, availableInventory); 
   };
 
-  const removeItem = (index) => {
-    const updatedCart = cartItems.filter((_, i) => i !== index);
-    setCartItems(updatedCart);
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
+  const handleRemoveItem = (productId, variant) => {
+    removeFromCart(productId, variant); 
     toast.success('Item removed from cart.');
   };
 
-  const clearCart = () => {
-    setCartItems([]);
-    localStorage.removeItem('cart');
-    toast.success('Cart cleared!');
+  const handleClearCart = () => {
+    clearCart(); 
   };
 
   const handleCheckout = () => {
@@ -96,7 +79,7 @@ function CartPage() {
 
     // Check if cart exceeds backend limit
     if (cartItems.length > 10) {
-      toast.error('Too many items in the cart (maximum 50). Please remove some items.');
+      toast.error('Too many items in the cart (maximum 10). Please remove some items.');
       return;
     }
 
@@ -133,13 +116,13 @@ function CartPage() {
                   Items ({cartItems.length})
                 </h2>
                 <button
-                  onClick={clearCart}
+                  onClick={handleClearCart}
                   className="text-red-500 hover:text-red-700 font-semibold transition"
                 >
                   Clear Cart
                 </button>
               </div>
-              {cartItems.map((item, index) => {
+              {cartItems.map((item) => {
                 const availableInventory = inventoryData[item.product._id] || 0;
                 const isOutOfStock = availableInventory === 0;
 
@@ -170,7 +153,7 @@ function CartPage() {
                       </p>
                       <div className="flex items-center gap-2 mt-2">
                         <button
-                          onClick={() => updateQuantity(index, item.quantity - 1)}
+                          onClick={() => handleUpdateQuantity(item.product._id, item.variant, item.quantity - 1)}
                           className="bg-gray-200 px-3 py-1 rounded-lg hover:bg-gray-300 transition"
                           disabled={isOutOfStock || loadingInventory}
                         >
@@ -178,7 +161,7 @@ function CartPage() {
                         </button>
                         <span className="text-gray-800">{item.quantity}</span>
                         <button
-                          onClick={() => updateQuantity(index, item.quantity + 1)}
+                          onClick={() => handleUpdateQuantity(item.product._id, item.variant, item.quantity + 1)}
                           className="bg-gray-200 px-3 py-1 rounded-lg hover:bg-gray-300 transition"
                           disabled={isOutOfStock || loadingInventory}
                         >
@@ -187,7 +170,7 @@ function CartPage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => removeItem(index)}
+                      onClick={() => handleRemoveItem(item.product._id, item.variant)}
                       className="text-red-500 hover:text-red-700 transition"
                     >
                       <TrashIcon className="h-6 w-6" />

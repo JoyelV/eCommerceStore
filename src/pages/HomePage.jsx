@@ -1,22 +1,22 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCartIcon } from '@heroicons/react/20/solid';
-import axios from 'axios';
 import toast from 'react-hot-toast';
+import { fetchProducts, fetchProductById } from '../api/ProductApi'; 
+import { useCart } from '../hooks/useCart'; 
 
 function HomePage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { addToCart } = useCart(); 
 
   // Fetch products on mount
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchProductsData = async () => {
       setLoading(true);
       try {
-        const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/products`, {
-          params: { limit: 6 }, 
-        });
+        const data = await fetchProducts({ limit: 6 }); 
         const fetchedProducts = Array.isArray(data.products) ? data.products : [];
         setProducts(fetchedProducts);
       } catch (err) {
@@ -28,14 +28,13 @@ function HomePage() {
       }
     };
 
-    fetchProducts();
+    fetchProductsData();
   }, []);
 
   // Add to Cart logic with inventory validation
-  const addToCart = async (productId) => {
+  const handleAddToCart = async (productId) => {
     try {
-      const { data: product } = await axios.get(`${import.meta.env.VITE_API_URL}/api/products/${productId}`);
-
+      const product = await fetchProductById(productId); 
       let defaultVariant = { color: '', size: '' };
       let inventory = 0;
       if (product.variants && product.variants.length > 0) {
@@ -49,52 +48,7 @@ function HomePage() {
       }
 
       const quantity = 1;
-
-      if (inventory === 0) {
-        toast.error(`${product.name} is out of stock!`, {
-          position: 'top-right',
-          duration: 3000,
-        });
-        return;
-      }
-
-      if (quantity > inventory) {
-        toast.error(`Only ${inventory} items available in stock for ${product.name}!`, {
-          position: 'top-right',
-          duration: 3000,
-        });
-        return;
-      }
-
-      // Add to cart logic
-      const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      const existingItem = cart.find(
-        (item) =>
-          item.product._id === product._id &&
-          item.variant.color === defaultVariant.color &&
-          item.variant.size === defaultVariant.size
-      );
-
-      if (existingItem) {
-        const newQuantity = existingItem.quantity + quantity;
-        if (newQuantity > inventory) {
-          toast.error(`Only ${inventory} items available in stock for ${product.name}!`, {
-            position: 'top-right',
-            duration: 3000,
-          });
-          return;
-        }
-        existingItem.quantity = newQuantity;
-      } else {
-        cart.push({ product, variant: defaultVariant, quantity });
-      }
-
-      localStorage.setItem('cart', JSON.stringify(cart));
-      window.dispatchEvent(new Event('cartUpdated')); 
-      toast.success(`${product.name} added to cart!`, {
-        position: 'top-right',
-        duration: 3000,
-      });
+      addToCart(product, defaultVariant, quantity, inventory); 
     } catch (err) {
       console.error('Error adding to cart:', err.message);
       toast.error('Failed to add product to cart. Please try again.', {
@@ -177,7 +131,7 @@ function HomePage() {
                   />
                   <div className="absolute top-0 right-0 m-2 opacity-0 hover:opacity-100 transition-opacity duration-300">
                     <button
-                      onClick={() => addToCart(product._id)}
+                      onClick={() => handleAddToCart(product._id)}
                       className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition shadow-md"
                       aria-label={`Add ${product.name} to cart`}
                     >
@@ -193,7 +147,7 @@ function HomePage() {
                     {product.description || 'No description available.'}
                   </p>
                   <div className="flex justify-between items-center">
-                    <p className="text-xl font-semibold text-gray-900">
+                    <p className="text-xl font-semibold text-gray-800">
                       ${product.price.toFixed(2)}
                     </p>
                     <Link

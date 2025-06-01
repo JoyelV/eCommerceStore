@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
 import toast from 'react-hot-toast';
+import { fetchProductById } from '../api/ProductApi'; 
+import { createOrder } from '../api/OrderApi'; 
+import { useCart } from '../hooks/useCart';
 
 function CheckoutPage() {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const { clearCart } = useCart(); 
   const { cartItems: initialCartItems, product, variant, quantity } = state || {};
   const [formData, setFormData] = useState({
     name: '',
@@ -24,7 +27,7 @@ function CheckoutPage() {
   const [loadingInventory, setLoadingInventory] = useState(true);
   const [cartItems, setCartItems] = useState([]);
 
-  // Normalize cartItems (convert single-item to multi-item format)
+  // Normalize cartItems 
   useEffect(() => {
     if (initialCartItems && initialCartItems.length > 0) {
       setCartItems(initialCartItems);
@@ -44,19 +47,17 @@ function CheckoutPage() {
     const checkInventory = async () => {
       setLoadingInventory(true);
       try {
-        const updatedInventory = {};
         for (const item of cartItems) {
-          const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/products/${item.product._id}`);
-          const fetchedProduct = res.data;
+          const fetchedProduct = await fetchProductById(item.product._id); 
           const selectedVariant = fetchedProduct.variants.find(
             (v) => v.color === item.variant.color && v.size === item.variant.size
           );
-          updatedInventory[item.product._id] = selectedVariant ? selectedVariant.inventory : 0;
+          const inventory = selectedVariant ? selectedVariant.inventory : 0;
 
-          if (item.quantity > (selectedVariant?.inventory || 0)) {
+          if (item.quantity > inventory) {
             setErrors((prev) => ({
               ...prev,
-              inventory: `Only ${selectedVariant?.inventory || 0} items available for ${item.product.name}.`,
+              inventory: `Only ${inventory} items available for ${item.product.name}.`,
             }));
           }
         }
@@ -147,20 +148,19 @@ function CheckoutPage() {
         customer: formData,
       };
 
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/orders`, payload);
-      const { orderNumber, status } = response.data;
+      const { orderNumber, status } = await createOrder(payload); 
 
       if (status === 'Approved') {
         toast.success('Order placed successfully! You will receive a confirmation email soon.');
-        localStorage.removeItem('cart');
+        clearCart(); 
         navigate(`/thank-you/${orderNumber}`);
       } else {
-        toast.error(`Transaction ${status.toLowerCase()}. Email sent to mail,Please try again.`);
+        toast.error(`Transaction ${status.toLowerCase()}. Email sent to mail, Please try again.`);
         setErrors({ submit: `Transaction ${status.toLowerCase()}. Please try again.` });
       }
     } catch (err) {
       console.error('Error placing order:', err.message);
-      const errorMessage = err.response?.data?.error || 'Failed to place order. Please try again.';
+      const errorMessage = err.message || 'Failed to place order. Please try again.';
       toast.error(errorMessage);
       setErrors({ submit: errorMessage });
     } finally {

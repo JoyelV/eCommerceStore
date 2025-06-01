@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/20/solid';
 import toast from 'react-hot-toast';
+import { fetchOrderById } from '../api/OrderApi'; 
 
 function ThankYouPage() {
   const { orderNumber } = useParams();
@@ -12,16 +12,15 @@ function ThankYouPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchOrder = async () => {
+    const fetchOrderData = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/orders/${orderNumber}`);
-        setOrder(res.data);
+        const fetchedOrder = await fetchOrderById(orderNumber); 
+        setOrder(fetchedOrder);
       } catch (err) {
         console.error('Error fetching order:', err.message);
-        const errorMessage = err.response?.data?.error || 'Failed to load order details';
-        setError(errorMessage);
-        if (err.response?.status === 404) {
+        setError(err.message || 'Failed to load order details');
+        if (err.message.includes('404')) {
           toast.error('Order not found. It may have been deleted or never existed.');
         }
       } finally {
@@ -29,7 +28,7 @@ function ThankYouPage() {
       }
     };
 
-    fetchOrder();
+    fetchOrderData();
   }, [orderNumber]);
 
   const handleRetryOrder = () => {
