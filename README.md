@@ -62,12 +62,18 @@ The app will be available at `http://localhost:5173`.
 ## Project Structure
 ```
 client/
-├── public/                    # Static assets (e.g., index.html, favicon)
+├── public/                    # Static assets (e.g., favicon, images)
 ├── src/
-│   ├── components/            # Reusable components (e.g., Header)
-│   │   └── Header.jsx
+│   ├── assets/                # Images, fonts, and other assets
+│   ├── components/            # Reusable components
+│   │   ├── Header.jsx
 │   │   ├── Footer.jsx
 │   │   ├── ProtectedRoute.jsx
+│   ├── api/                   # API service files
+│   │   ├── AuthApi.js
+│   │   ├── AxiosInstance.js
+│   │   ├── OrderApi.js
+│   │   ├── ProductApi.js
 │   ├── pages/                 # Page components
 │   │   ├── CartPage.jsx
 │   │   ├── CheckoutPage.jsx
@@ -75,25 +81,30 @@ client/
 │   │   ├── LoginPage.jsx
 │   │   ├── NotFoundPage.jsx
 │   │   ├── ProductDetailedPage.jsx
-│   │   ├── ProductsPage.jsx
+│   │   ├── ProductPage.jsx
 │   │   ├── RegisterPage.jsx
-│   │   └── ThankYouPage.jsx
-│   ├── context/              # React context (e.g., authHook)
-│   │   └── AuthContext.js
-│   │   └── AuthHook.js
-│   │   └── AuthProvider.js
-│   ├── App.jsx               # Main app component with routing
-│   ├── index.css             # Main CSS file
-│   ├── main.jsx              # Entry point
-│   └── styles/               # Custom styles (if any)
-├── package.json              # Dependencies and scripts
-└── tailwind.config.js        # Tailwind CSS configuration
+│   │   ├── ThankYouPage.jsx
+│   ├── context/               # React context for state management
+│   │   ├── AuthContext.jsx
+│   │   ├── AuthProvider.jsx
+│   ├── hooks/                 # Custom React hooks
+│   │   ├── useAuth.js
+│   │   ├── useCart.js
+│   ├── App.jsx                # Main app component with routing
+│   ├── index.css              # Global CSS with Tailwind imports
+│   ├── main.jsx               # Entry point for the application
+├── .env                       # Environment variables
+├── package.json               # Dependencies and scripts
+├── vite.config.js             # Vite configuration
+├── postcss.config.js          # PostCSS configuration for Tailwind
+├── tailwind.config.js         # Tailwind CSS configuration
 ```
 
 ## Available Scripts
-- `npm start`: Starts the development server.
-- `npm build`: Builds the app for production.
-- `npm test`: Runs tests (if configured).
+- npm run dev: Starts the development server with Vite.
+- npm run build: Builds the app for production, outputting to the dist folder.
+- npm run preview: Previews the production build locally.
+- npm run lint: Runs ESLint to check for code quality issues.
 
 ## Usage
 1. **Home Page**: Browse featured products and click "View More Products" to see the full catalog.

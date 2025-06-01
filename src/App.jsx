@@ -22,6 +22,7 @@ function App() {
         <Header />
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/products" element={<ProductsPage />} />
           <Route path="/product/:id" element={<ProductDetailedPage />} />
           <Route path="/checkout" element={
             <ProtectedRoute redirectIfAuthenticated={false}>
@@ -50,7 +51,6 @@ function App() {
               <RegisterPage />
               </ProtectedRoute>
             } />
-          <Route path="/products" element={<ProductsPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
         <Footer />
